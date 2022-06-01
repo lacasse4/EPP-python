@@ -18,10 +18,12 @@ class Evaluator(list):
         total = 0.0
         
         # The following line is required to accomodate the way Moodle score data
-        # is actually outputed by WorkshopETS "Export des evaluation (sans multiligne)".
+        # is actually outputed by WorkshopETS "Export des evaluations (sans multiligne)".
         # The minimum aspect score is always 1. If a teacher wants the scale to start
         # from 0 (such as in ELE795), the min_scale parameter must be set to 0, and
         # then the program will substract 1 from all scores given by the evaluators.
+        # This is requiered to have a correct factor calculation for ELE795 (or
+        # any course that uses a scale starting at 0)
         offset = 0.0 if min_scale == 1 else 1.0
         
         for note_aspect in self:
@@ -61,7 +63,7 @@ class Evaluated(list):
                  evaluated student note.
     - modified:  boolean indicating if the student note was overridden
                  by an administrator with a manual input. In this case,
-                 the note is note an average score, but the actual note
+                 the note is not the score average, but the actual note
                  entered by the administrator.
                  
     compute_note() should be called after all teams have been added to EPP.
@@ -113,7 +115,7 @@ class Team(list):
     Team attributes are:
     - team_name: the team name
     - average:   average of all the Team evaluations
-    compute() should be called after all teams have been added to EPP.
+    Team.compute() should be called after all teams have been added to EPP.
     Team.compute() is normaly called from EPP.compute(). """
     
     def __init__(self, team_name: str):
@@ -121,7 +123,7 @@ class Team(list):
         self.name = team_name
         self.average = 0.0
         
-    def compute(self, min_scale: int, max_scale: int) -> int:
+    def compute(self, min_scale: int, max_scale: int) -> None:
         # compute evaluated students notes
         total = 0.0
         for e in self:
@@ -132,10 +134,8 @@ class Team(list):
         for e in self:
             e.compute_factor(self.average)
             
-        return len(self)
-
     def __repr__(self) -> str:
-        s = f"Team: {self.name}, average score={self.average:0.2f}\n"
+        s = f"\nTeam: {self.name}, average score={self.average:0.2f}\n"
         for e in self:
             s += f"{e}"
         return s
@@ -150,9 +150,7 @@ class Team(list):
 class EPP(list):
     """ EPP is the top structure of a peer evaluation ("Évaluation Par les Pairs").
     EPP is a list of Team.
-    EEP attributes are:
-    - groupings:   an array of n_evaluted booleans used separate Teams (for display)
-    compute() should be called after all teams have been added to EPP.
+    EPP.compute() should be called after all teams have been added to EPP.
     An EPP structure is normally populated by calling epp_reader.parse().
     
     A peer evaluation is done amongst a team of several students (normaly 4 or more).
@@ -179,28 +177,13 @@ class EPP(list):
     
     def __init__(self):
         super().__init__()
-        self.groupings = []
-        self.n_evaluated = 0
             
     def compute(self, min_scale: int, max_scale: int) -> None:
-        self.n_evaluated = 0
         for t in self:
-            self.n_evaluated += t.compute(min_scale, max_scale)
-        self.create_groupings()
-        # notify change here
-        
-    def create_groupings(self) -> None:
-        self.groupings = []
-        state = True
-        
-        for t in self:
-            for _ in t:
-                self.groupings.append(state)
-            state = not state
-                
+            t.compute(min_scale, max_scale)
+
     def __repr__(self) -> str:
-        s =  f"Number of students evaluated: {self.n_evaluated}\n"
-        s += f"Groupings: {self.groupings}\n"
+        s = ""
         for t in self:
             s += f"{t}"
         return s

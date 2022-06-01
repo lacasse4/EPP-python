@@ -3,12 +3,12 @@
 # Date: 2022-06-01
 # GitHub: https://github.com/lacasse4/EPP-python
 
-# This Python program executes from a command line.
-# Typical call:
+# This Python program must be executed from a command line.
+# Typical invocation:
 #      $ python3 EPP.py -ELE400 evaluations_20211220-164427.csv
-# It reads a csv file previously exported by 'export des évaluations (sans multiligne)' from Workshop ÉTS in Moodle.
-# It produces a Excel spreadsheet that allows a teacher to easily compute individual student scores following
-# a peer review done with 'Module Atelier' in Moodle.
+# The program reads a csv file previously exported by 'export des évaluations (sans multiligne)'
+# from Workshop ÉTS in Moodle. It produces an Excel spreadsheet which allows a teacher to easily
+# compute individual student scores following a peer review done with 'Module Atelier' in Moodle.
 # This program is functionnaly equivalent to EPP V1.4 written in Java (https://github.com/lacasse4/EPP)
 
 # Note: to run, you may have to install the 'openpyxl' Python library on your computer.
@@ -39,8 +39,20 @@ Les options -min et -max seront ignorées si l'option -ELE400 ou -ELE795 a été
     parser.add_argument('-ELE795', action='store_true', help = 'min et max sont initialisés à 0 et 3 pour ELE795')
     parser.add_argument('-min', nargs = 1, type = int, default = [1], choices = [0, 1], help = 'score minimum pour un aspect d''évaluation')
     parser.add_argument('-max', nargs = 1, type = int, default = [5], choices = [2, 3, 4, 5], help = 'score maximum pour un aspect d''évaluation')
+    parser.add_argument('-v', '--verbose', action='store_true', help = 'affiche les données à la console (pour déverminage)')
     
     args = parser.parse_args()
+    if args.verbose:
+        print("Parametres")
+        print("  fichier_csv : " + args.fichier_csv[0])
+        print("  fichier_xlsx: " + str(args.fichier_xlsx))
+        print("  ELE400      : " + str(args.ELE400))
+        print("  ELE795      : " + str(args.ELE795))
+        print("  min         : " + str(args.min[0]))
+        print("  max         : " + str(args.max[0]))
+        print("  verbose     : " + str(args.verbose))
+        print()
+    
     input_filename = args.fichier_csv[0]
     
     # check if the input csv file exists
@@ -78,6 +90,8 @@ Les options -min et -max seront ignorées si l'option -ELE400 ou -ELE795 a été
     # Read and process the input file
     #
     
+    print("Fichier lu: " + input_filename)
+    
     # clean csv file
     r.clean_csv(input_filename, temp_filename)
 
@@ -93,7 +107,10 @@ Les options -min et -max seront ignorées si l'option -ELE400 ou -ELE795 a été
     # Write results in Excel format
     #
     
-    # print(epp)    
+    if args.verbose:
+        print(epp)    
+    
+    print("Fichier produit: " + output_filename)
     w.write_xlsx(output_filename, epp)
     
     print("Traitement terminé avec succès")

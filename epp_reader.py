@@ -3,11 +3,11 @@ import epp_model as m
 
 """ Static functions to read and parse the CSV file produced by Workshop ETS (sans multiligne)
     It is assumed that the file read in the context of the peer review is produced by the
-    Module Atelier in Moodle. WorkshopETS "Export des evaluation (sans multiligne)" button
+    Module Atelier in Moodle. WorkshopETS "Export des evaluations (sans multiligne)" button
     must be used. The file can be exported once all students have done their evaluations,
     this either in:
         - Phase de notation des évaluations, or
-        - Phase fermé
+        - Phase fermée
     
     Note that elements in the CSV file are actually separated by semicolons (";"). 
     
@@ -60,7 +60,7 @@ EQUIPE1_ELE795;etudiant13;etudiant13;etudiant13@etsmtl.ca;"Quantité de travail"
 """
     
 def read_csv(filename: str) -> list:
-    """ read a csv file and return in a dictionary"""
+    """ read a csv file and return a list of dictionaries """
     
     in_file = open(filename)
     csv_reader = csv.DictReader(in_file, delimiter=";")
@@ -104,6 +104,7 @@ def parse(rows: list) -> m.EPP:
     """ parse rows and create an EPP data structure.
     rows is an array of dictionnary. Each individual row is a line
     from the CSV file in the form of a dictionnary. """
+    
     last = get_empty_dict(rows[0])
     epp = m.EPP()
     
